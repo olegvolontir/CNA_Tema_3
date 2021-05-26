@@ -8,6 +8,8 @@ import "google/protobuf/timestamp.proto";
 service Chat{
     rpc SendMessage(SendMessageRequest) returns(google.protobuf.Empty);
     rpc GetAllMessages(google.protobuf.Empty) returns(stream GetAllMessagesResponse);
+    rpc LogOut(User) returns (LogResponse);
+	rpc LogIn(User) returns (LogResponse);
 }
 
 message SendMessageRequest{
@@ -22,14 +24,17 @@ message ChatMessage{
 
 message User{
     string name=1;
-    Status status=2;
-    enum Status{
-        CONNECTED=0;
-        DISCONNECTED=1;
-    }
 }
 
 message GetAllMessagesResponse{
-   repeated ChatMessage messages=1;
-   
+   repeated ChatMessage messages=1;   
+}
+
+message LogResponse{
+	Status status = 1;
+
+	enum Status{
+		CONNECTED = 0;
+		DISCONNECTED = 1;
+	}
 }

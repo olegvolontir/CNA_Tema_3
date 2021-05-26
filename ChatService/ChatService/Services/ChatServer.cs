@@ -25,5 +25,20 @@ namespace ChatService.Services
         {
             return base.SendMessage(request, context);
         }
+
+        public override Task<LogResponse> LogIn(User request, ServerCallContext context)
+        {
+            _logger.Log(LogLevel.Information, request.Name + " has connected.");
+            Console.WriteLine(request.Name + " has connected.");
+            return Task.FromResult(new LogResponse() { Status = LogResponse.Types.Status.Connected });
+        }
+
+        public override Task<LogResponse> LogOut(User request, ServerCallContext context)
+        {
+            _logger.Log(LogLevel.Information, request.Name + " has disconnected.");
+            Console.WriteLine(request.Name + " has disconnected.");
+            return Task.FromResult(new LogResponse() { Status = LogResponse.Types.Status.Disconnected });
+        }
+
     }
 }
