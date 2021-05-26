@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ChatService.Services;
 
 namespace ChatService
 {
@@ -31,7 +32,7 @@ namespace ChatService
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<GreeterService>();
+                endpoints.MapGrpcService<ChatServer>();
 
                 endpoints.MapGet("/", async context =>
                 {
