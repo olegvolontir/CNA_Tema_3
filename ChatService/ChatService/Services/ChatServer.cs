@@ -12,18 +12,26 @@ namespace ChatService.Services
     public class ChatServer : Chat.ChatBase
     {
         private readonly ILogger<ChatServer> _logger;
+
+        private static List<ChatMessage> messages = new();
+
         public ChatServer(ILogger<ChatServer> logger)
         {
             _logger = logger;
+        }        
+
+        public override async Task GetAllMessages(Empty request, IServerStreamWriter<GetAllMessagesResponse> responseStream, ServerCallContext context)
+        {
+            var response = new GetAllMessagesResponse();
+            response.Messages.Add(messages[0]);
+
+            await responseStream.WriteAsync(response);
         }
 
-        public override Task GetAllMessages(Empty request, IServerStreamWriter<GetAllMessagesResponse> responseStream, ServerCallContext context)
-        {
-            return base.GetAllMessages(request, responseStream, context);
-        }
         public override Task<Empty> SendMessage(SendMessageRequest request, ServerCallContext context)
         {
-            return base.SendMessage(request, context);
+            messages.Add(request.ChatMessage);
+            return Task.FromResult(new Empty());
         }
 
         public override Task<LogResponse> LogIn(User request, ServerCallContext context)
