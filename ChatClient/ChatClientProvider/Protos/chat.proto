@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option csharp_namespace = "ChatService.Protos";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service Chat{
+    rpc SendMessage(stream ChatMessage) returns(stream ChatMessage);
+    rpc LogOut(User) returns (LogResponse);
+	rpc LogIn(User) returns (LogResponse);
+}
+
+message ChatMessage{
+    User sender=1;
+    string content=2;
+    google.protobuf.Timestamp dateTimeStamp=3;
+}
+
+message User{
+	string ID=1;
+    string name=2;
+}
+
+message LogResponse{
+	Status status = 1;
+
+	enum Status{
+		CONNECTED = 0;
+		DISCONNECTED = 1;
+	}
+}
