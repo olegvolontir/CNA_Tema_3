@@ -34,6 +34,13 @@ namespace ChatClientConsole
 
             using (var chat = client.SendMessage())
             {
+                await chat.RequestStream.WriteAsync(new ChatMessage() 
+                { 
+                    Sender = user, 
+                    Content = "", 
+                    DateTimeStamp = DateTime.UtcNow.ToTimestamp() 
+                });
+
                 var inputStream = Task.Run(async () =>
                 {
                     while (await chat.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))

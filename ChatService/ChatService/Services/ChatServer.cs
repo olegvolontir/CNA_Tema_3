@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ChatService.Protos;
@@ -38,9 +39,21 @@ namespace ChatService.Services
         {
             if (!await requestStream.MoveNext()) return;
 
-            while(await requestStream.MoveNext())
+            _chatRoomService
+                .Users
+                .Where(u => u.ID == requestStream.Current.Sender.ID)
+                .FirstOrDefault().ResponseStream = responseStream;
+
+            try
             {
-                await _chatRoomService.SendMessageToUsers(requestStream.Current);
+                while (await requestStream.MoveNext())
+                {
+                    await _chatRoomService.SendMessageToUsers(requestStream.Current);
+                }
+            }
+            catch(IOException)
+            {
+                await LogOut(requestStream.Current.Sender, context);
             }
         }
 
