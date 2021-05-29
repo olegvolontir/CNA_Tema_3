@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "ChatService.Protos";
+option csharp_namespace = "ChatClientProvider.Protos";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
