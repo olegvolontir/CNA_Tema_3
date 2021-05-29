@@ -3,10 +3,26 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ChatClientWPF"
+        xmlns:ctx="clr-namespace:ChatClientWPF.ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+    <Window.DataContext>
+        <ctx:ChatVM/>
+    </Window.DataContext>
 
-    </Grid>
+    <StackPanel>
+        <WrapPanel>
+            <ListBox Name="Messages" ItemsSource="{Binding ChatMessages}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Content}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </WrapPanel>
+        <WrapPanel>
+            <TextBox Name="Message" Height="30" Width="200"/>
+            <Button Height="30" Width="80" Content="Send" Command="{Binding SendMessageCommand}" CommandParameter="{Binding ElementName=Message, Path=Text}"/>
+        </WrapPanel>
+    </StackPanel>
 </Window>

@@ -49,11 +49,13 @@ namespace ChatService.Services
                 while (await requestStream.MoveNext())
                 {
                     await _chatRoomService.SendMessageToUsers(requestStream.Current);
+                    Console.WriteLine("MESSAGE SENT");
                 }
             }
             catch(IOException)
             {
                 await LogOut(requestStream.Current.Sender, context);
+                Console.WriteLine("LOG OUT");
             }
         }
 

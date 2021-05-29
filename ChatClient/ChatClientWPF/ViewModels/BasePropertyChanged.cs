@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace ChatClientWPF.ViewModel
+namespace ChatClientWPF.ViewModels
 {
     public class BasePropertyChanged : INotifyPropertyChanged
     {

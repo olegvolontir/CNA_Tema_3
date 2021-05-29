@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ChatClientProvider.Services
 {
-    class GrpcChatServiceProvider
+    public class GrpcChatServiceProvider
     {
         private string Url { get; set; }
         private Lazy<GrpcChannel> RpcChannel { get; set; }
