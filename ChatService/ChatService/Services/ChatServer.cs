@@ -21,20 +21,6 @@ namespace ChatService.Services
             _chatRoomService = chatRoomService;
         }
 
-        //public override async Task GetAllMessages(Empty request, IServerStreamWriter<GetAllMessagesResponse> responseStream, ServerCallContext context)
-        //{
-        //    var response = new GetAllMessagesResponse();
-        //    response.Messages.Add(messages[0]);
-
-        //    await responseStream.WriteAsync(response);
-        //}
-
-        //public override Task<Empty> SendMessage(SendMessageRequest request, ServerCallContext context)
-        //{
-        //    messages.Add(request.ChatMessage);
-        //    return Task.FromResult(new Empty());
-        //}
-
         public override async Task SendMessage(IAsyncStreamReader<ChatMessage> requestStream, IServerStreamWriter<ChatMessage> responseStream, ServerCallContext context)
         {
             if (!await requestStream.MoveNext()) return;
@@ -48,21 +34,22 @@ namespace ChatService.Services
             {
                 while (await requestStream.MoveNext())
                 {
-                    await _chatRoomService.SendMessageToUsers(requestStream.Current);
-                    Console.WriteLine("MESSAGE SENT");
+                    var message = requestStream.Current;
+                    await _chatRoomService.SendMessageToUsers(message);
+                    _logger.Log(LogLevel.Information, "Message sent: " + message.Sender.Name 
+                        + ": " + message.Content + " at " + message.DateTimeStamp.ToDateTime().Hour
+                        + ":" + message.DateTimeStamp.ToDateTime().Minute);
                 }
             }
             catch(IOException)
             {
                 await LogOut(requestStream.Current.Sender, context);
-                Console.WriteLine("LOG OUT");
             }
         }
 
         public override Task<LogResponse> LogIn(User request, ServerCallContext context)
         {
             _logger.Log(LogLevel.Information, request.Name + " has connected.");
-            Console.WriteLine(request.Name + " has connected.");
 
             _chatRoomService.Users.Add(new Models.User() { ID = request.ID, Name = request.Name });
 
@@ -72,7 +59,6 @@ namespace ChatService.Services
         public override Task<LogResponse> LogOut(User request, ServerCallContext context)
         {
             _logger.Log(LogLevel.Information, request.Name + " has disconnected.");
-            Console.WriteLine(request.Name + " has disconnected.");
 
             _chatRoomService.Users.Remove(_chatRoomService.Users.Single(u => u.ID == request.ID));
 

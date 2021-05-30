@@ -1,12 +1,14 @@
 ﻿using ChatClientProvider.Protos;
 using ChatClientProvider.Services;
 using ChatClientWPF.ViewModels;
+using ChatClientWPF.Views;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ChatClientWPF.Services
 {
@@ -21,23 +23,31 @@ namespace ChatClientWPF.Services
         {
             _chatVM = chatVM;
             _client = new GrpcChatServiceProvider().GetChatClient();
-           
-            //var task = Task.Run(async () =>
-            //{
-            //    await _client.LogInAsync(CurrentUser);
-            //    await _client.SendMessage().RequestStream.WriteAsync(new ChatMessage() { Sender = CurrentUser, Content = "", DateTimeStamp = DateTime.UtcNow.ToTimestamp() });
-            //});
         }
 
-        public async Task UserLogIn(object name)
+        public async Task UserLogIn(object obj)
         {
-            User user = new User()
+            var _params = (object[])obj;
+
+            if (string.IsNullOrEmpty(_params[0] as string)) return;
+
+            CurrentUser = new User()
             {
                 ID = Guid.NewGuid().ToString(),
-                Name = name as string
+                Name = _params[0] as string
             };
 
-            await _client.LogInAsync(user);
+            await _client.LogInAsync(CurrentUser);
+
+            (_params[1] as Window).Hide();
+            var chatWindow = new ChatWindow();
+            chatWindow.ShowDialog();
+        }
+
+        public async Task UserLogOut(object obj)
+        {
+            await _client.LogOutAsync(CurrentUser);
+            (obj as Window).Close();
         }
 
         public void Send(object obj)
@@ -61,9 +71,6 @@ namespace ChatClientWPF.Services
             {
                 await _client.SendMessage().RequestStream.WriteAsync(message); 
             });
-
-            //await _client.SendMessage().RequestStream.WriteAsync(message);
-
         }
     }
 }

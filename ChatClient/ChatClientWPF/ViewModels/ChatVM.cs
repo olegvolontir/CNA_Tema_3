@@ -36,7 +36,6 @@ namespace ChatClientWPF.ViewModels
         }
 
         public string CurrentMessage { get; set; }
-        public string UserName { get; set; }
 
         private ICommand sendMessageCommand;
         public ICommand SendMessageCommand
@@ -62,6 +61,20 @@ namespace ChatClientWPF.ViewModels
                     logInCommand = new RelayCommand(async param => await chatLogic.UserLogIn(param));
                 }
                 return logInCommand;
+            }
+        }
+
+        private ICommand logOutCommand;
+        public ICommand LogOutCommand
+        {
+            get
+            {
+                if (logOutCommand == null)
+                {
+                    //logOutCommand = new RelayCommandGeneric<string>(async param => await chatLogic.UserLogIn(param));
+                    logOutCommand = new RelayCommand(async param => await chatLogic.UserLogOut(param));
+                }
+                return logOutCommand;
             }
         }
     }

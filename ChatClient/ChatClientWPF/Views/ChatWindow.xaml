@@ -22,7 +22,11 @@
         </WrapPanel>
         <WrapPanel>
             <TextBox Name="Message" Height="30" Width="200"/>
-            <Button Height="30" Width="80" Content="Send" Command="{Binding SendMessageCommand}" CommandParameter="{Binding ElementName=Message, Path=Text}"/>
+            <Button Height="30" Width="80" Content="Send" Margin="20,0"
+                    Command="{Binding SendMessageCommand}" 
+                    CommandParameter="{Binding ElementName=Message, Path=Text}"/>
+            <Button Height="30" Width="80" Content="Leave" Margin="20,0"
+                    Command="{Binding LogOutCommand}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"/>
         </WrapPanel>
     </StackPanel>
 </Window>

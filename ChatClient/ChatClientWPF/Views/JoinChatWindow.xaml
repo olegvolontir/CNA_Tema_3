@@ -3,10 +3,28 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ChatClientWPF.Views"
+        xmlns:local="clr-namespace:ChatClientWPF.ViewModels"
+        xmlns:localConverter="clr-namespace:ChatClientWPF.Converters"
         mc:Ignorable="d"
-        Title="JoinChatWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+        Title="JoinChatWindow" Height="300" Width="300">
+    
+    <Window.DataContext>
+        <local:ChatVM/>
+    </Window.DataContext>
+
+    <StackPanel>
+        <StackPanel.Resources>
+            <localConverter:ObjectConverter x:Key="objectConverter"/>
+        </StackPanel.Resources>
+        <TextBox Name="Username" Height="25" Width="100" Margin="0,50,0,10"/>
+        <Button Content="Join" Height="20" Width="50" Command="{Binding LogInCommand}">
+            <Button.CommandParameter>
+                <MultiBinding Converter="{StaticResource objectConverter}">
+                    <Binding Path="Text" ElementName="Username"/>
+                    <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType=Window}"/>
+                </MultiBinding>
+            </Button.CommandParameter>
+        </Button>
+    </StackPanel>
+    
 </Window>
