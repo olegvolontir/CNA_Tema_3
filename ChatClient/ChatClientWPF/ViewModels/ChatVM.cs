@@ -7,18 +7,22 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace ChatClientWPF.ViewModels
 {
     class ChatVM : BasePropertyChanged
     {
-        private ChatLogic chatLogic;
+        private ChatLogic _chatLogic;
+        private object _chatMessagesLock = new();
 
         public ChatVM()
         {
-            chatLogic = new(this);
+            currentMessage = "";
             ChatMessages = new();
+            BindingOperations.EnableCollectionSynchronization(ChatMessages, _chatMessagesLock);
+            _chatLogic = new(this);
         }
 
         private ObservableCollection<ChatMessage> chatMessages;
@@ -35,7 +39,18 @@ namespace ChatClientWPF.ViewModels
             }
         }
 
-        public string CurrentMessage { get; set; }
+        private string currentMessage;
+        public string CurrentMessage {
+            get
+            {
+                return currentMessage;
+            }
+            set
+            {
+                currentMessage = value;
+                _chatLogic._newMessage = true;
+            } 
+        }
 
         private ICommand sendMessageCommand;
         public ICommand SendMessageCommand
@@ -44,7 +59,7 @@ namespace ChatClientWPF.ViewModels
             {
                 if (sendMessageCommand == null)
                 {
-                    sendMessageCommand = new RelayCommand(chatLogic.Send);
+                    sendMessageCommand = new RelayCommand(_chatLogic.SendMessage);
                 }
                 return sendMessageCommand;
             }
@@ -55,10 +70,10 @@ namespace ChatClientWPF.ViewModels
         {
             get
             {
-                if(logInCommand == null)
+                if (logInCommand == null)
                 {
                     //logInCommand = new RelayCommandGeneric<string>(async param => await chatLogic.UserLogIn(param));
-                    logInCommand = new RelayCommand(async param => await chatLogic.UserLogIn(param));
+                    logInCommand = new RelayCommand(async param => await _chatLogic.UserLogIn(param));
                 }
                 return logInCommand;
             }
@@ -72,7 +87,7 @@ namespace ChatClientWPF.ViewModels
                 if (logOutCommand == null)
                 {
                     //logOutCommand = new RelayCommandGeneric<string>(async param => await chatLogic.UserLogIn(param));
-                    logOutCommand = new RelayCommand(async param => await chatLogic.UserLogOut(param));
+                    logOutCommand = new RelayCommand(async param => await _chatLogic.UserLogOut(param));
                 }
                 return logOutCommand;
             }

@@ -12,7 +12,7 @@
 
     <StackPanel>
         <WrapPanel>
-            <ListBox Name="Messages" ItemsSource="{Binding ChatMessages}">
+            <ListBox Height ="200" Width="200" Name="Messages" ItemsSource="{Binding ChatMessages}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Content}"/>

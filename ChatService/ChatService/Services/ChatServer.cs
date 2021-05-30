@@ -32,13 +32,14 @@ namespace ChatService.Services
 
             try
             {
+                Console.WriteLine(requestStream.Current.Content);
                 while (await requestStream.MoveNext())
                 {
                     var message = requestStream.Current;
-                    await _chatRoomService.SendMessageToUsers(message);
                     _logger.Log(LogLevel.Information, "Message sent: " + message.Sender.Name 
                         + ": " + message.Content + " at " + message.DateTimeStamp.ToDateTime().Hour
                         + ":" + message.DateTimeStamp.ToDateTime().Minute);
+                    await _chatRoomService.SendMessageToUsers(message);
                 }
             }
             catch(IOException)

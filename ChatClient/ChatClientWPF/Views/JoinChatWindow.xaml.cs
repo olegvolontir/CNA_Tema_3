@@ -24,13 +24,6 @@ namespace ChatClientWPF.Views
             InitializeComponent();
         }
 
-        private void HideWindow(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(Username.Text)) return;
-
-            this.Hide();
-            var chatWindow = new ChatWindow();
-            chatWindow.ShowDialog();
-        }
+      
     }
 }

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -16,13 +17,14 @@ namespace ChatClientWPF.Services
     {
         private static Chat.ChatClient _client;
         public static User CurrentUser { get; set; }
-        private bool _newMessage = false;
+        public bool _newMessage = false;
+        public bool _isRunning = true;
         private ChatVM _chatVM;
 
         public ChatLogic(ChatVM chatVM)
         {
-            _chatVM = chatVM;
             _client = new GrpcChatServiceProvider().GetChatClient();
+            _chatVM = chatVM;
         }
 
         public async Task UserLogIn(object obj)
@@ -30,6 +32,7 @@ namespace ChatClientWPF.Services
             var _params = (object[])obj;
 
             if (string.IsNullOrEmpty(_params[0] as string)) return;
+
 
             CurrentUser = new User()
             {
@@ -39,9 +42,7 @@ namespace ChatClientWPF.Services
 
             await _client.LogInAsync(CurrentUser);
 
-            (_params[1] as Window).Hide();
-            var chatWindow = new ChatWindow();
-            chatWindow.ShowDialog();
+            await Chatting();
         }
 
         public async Task UserLogOut(object obj)
@@ -50,27 +51,50 @@ namespace ChatClientWPF.Services
             (obj as Window).Close();
         }
 
-        public void Send(object obj)
+        public void SendMessage(object obj)
         {
             _chatVM.CurrentMessage = obj as string;
             _newMessage = true;
         }
 
-        public static void SendMessage(object obj)
+        public async Task StartChatting()
         {
-            string content = obj as string;
+            await Chatting();
+        }
 
-            ChatMessage message = new ChatMessage
+        public async Task Chatting()
+        {
+            using (var chat = _client.SendMessage())
             {
-                Sender = CurrentUser,
-                Content = content,
-                DateTimeStamp = DateTime.UtcNow.ToTimestamp()
-            };
-
-            var task = Task.Run(async () => 
-            {
-                await _client.SendMessage().RequestStream.WriteAsync(message); 
-            });
+                await chat.RequestStream.WriteAsync(new ChatMessage()
+                {
+                    Sender = CurrentUser,
+                    Content = "",
+                    DateTimeStamp = DateTime.UtcNow.ToTimestamp()
+                });
+                var task = Task.Run(async () =>
+                {
+                    while (await chat.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))
+                    {
+                        _chatVM.ChatMessages.Add(chat.ResponseStream.Current);
+                    }
+                });
+                while (_isRunning)
+                {
+                    await Task.Delay(500);
+                    if (_newMessage)
+                    {
+                        await chat.RequestStream.WriteAsync(new ChatMessage()
+                        {
+                            Sender = CurrentUser,
+                            Content = _chatVM.CurrentMessage,
+                            DateTimeStamp = DateTime.UtcNow.ToTimestamp()
+                        });
+                        _newMessage = false;
+                    }
+                }
+            }
+            await _client.LogOutAsync(CurrentUser);
         }
     }
 }
