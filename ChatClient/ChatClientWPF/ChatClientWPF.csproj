@@ -10,8 +10,4 @@
     <ProjectReference Include="..\ChatClientProvider\ChatClientProvider.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Views\" />
-  </ItemGroup>
-
 </Project>
