@@ -65,19 +65,19 @@ namespace ChatClientWPF.ViewModels
             }
         }
 
-        private ICommand logInCommand;
-        public ICommand LogInCommand
-        {
-            get
-            {
-                if (logInCommand == null)
-                {
-                    //logInCommand = new RelayCommandGeneric<string>(async param => await chatLogic.UserLogIn(param));
-                    logInCommand = new RelayCommand(async param => await _chatLogic.UserLogIn(param));
-                }
-                return logInCommand;
-            }
-        }
+        //private ICommand logInCommand;
+        //public ICommand LogInCommand
+        //{
+        //    get
+        //    {
+        //        if (logInCommand == null)
+        //        {
+        //            //logInCommand = new RelayCommandGeneric<string>(async param => await chatLogic.UserLogIn(param));
+        //            logInCommand = new RelayCommand(async param => await _chatLogic.UserLogIn(param));
+        //        }
+        //        return logInCommand;
+        //    }
+        //}
 
         private ICommand logOutCommand;
         public ICommand LogOutCommand

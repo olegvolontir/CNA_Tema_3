@@ -9,7 +9,7 @@
         Title="JoinChatWindow" Height="300" Width="300">
     
     <Window.DataContext>
-        <local:ChatVM/>
+        <local:LoginVM/>
     </Window.DataContext>
 
     <StackPanel>

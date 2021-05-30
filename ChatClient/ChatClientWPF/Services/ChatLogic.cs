@@ -25,25 +25,27 @@ namespace ChatClientWPF.Services
         {
             _client = new GrpcChatServiceProvider().GetChatClient();
             _chatVM = chatVM;
+            CurrentUser = Helper.user;
+            StartChatting();
         }
 
-        public async Task UserLogIn(object obj)
-        {
-            var _params = (object[])obj;
+        //public async Task UserLogIn(object obj)
+        //{
+        //    var _params = (object[])obj;
 
-            if (string.IsNullOrEmpty(_params[0] as string)) return;
+        //    if (string.IsNullOrEmpty(_params[0] as string)) return;
 
 
-            CurrentUser = new User()
-            {
-                ID = Guid.NewGuid().ToString(),
-                Name = _params[0] as string
-            };
+        //    CurrentUser = new User()
+        //    {
+        //        ID = Guid.NewGuid().ToString(),
+        //        Name = _params[0] as string
+        //    };
 
-            await _client.LogInAsync(CurrentUser);
+        //    await _client.LogInAsync(CurrentUser);
 
-            await Chatting();
-        }
+        //    await Chatting();
+        //}
 
         public async Task UserLogOut(object obj)
         {
@@ -57,7 +59,7 @@ namespace ChatClientWPF.Services
             _newMessage = true;
         }
 
-        public async Task StartChatting()
+        public async void StartChatting()
         {
             await Chatting();
         }
