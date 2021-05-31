@@ -21,8 +21,24 @@ namespace ChatClientWPF.ViewModels
         {
             currentMessage = "";
             ChatMessages = new();
+            Users = new();
             BindingOperations.EnableCollectionSynchronization(ChatMessages, _chatMessagesLock);
             _chatLogic = new(this);
+        }
+
+
+        private ObservableCollection<User> users;
+        public ObservableCollection<User> Users
+        {
+            get
+            {
+                return users;
+            }
+            set
+            {
+                users = value;
+                NotifyPropertyChanged(nameof(Users));
+            }
         }
 
         private ObservableCollection<ChatMessage> chatMessages;

@@ -21,5 +21,7 @@ namespace ChatClientWPF.Views
         {
             InitializeComponent();
         }
+
+        
     }
 }

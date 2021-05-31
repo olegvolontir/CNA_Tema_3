@@ -30,5 +30,7 @@ namespace ChatService.Services
                 await responseStream.WriteAsync(message);
             }
         }
+
+       
     }
 }

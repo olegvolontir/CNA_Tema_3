@@ -59,6 +59,13 @@ namespace ChatService.Services
             }
         }
 
+        public override async Task GetAllUsers(Empty request, IServerStreamWriter<User> responseStream, ServerCallContext context)
+        {
+            foreach (var user in _chatRoomService.Users)
+            {
+                await responseStream.WriteAsync(new User() {ID=user.ID, Name=user.Name });
+            }
+        }
 
         public override Task<LogResponse> LogIn(User request, ServerCallContext context)
         {

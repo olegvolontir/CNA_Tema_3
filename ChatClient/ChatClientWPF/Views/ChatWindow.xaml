@@ -12,10 +12,24 @@
 
     <StackPanel>
         <WrapPanel>
-            <ListBox Height ="200" Width="200" Name="Messages" ItemsSource="{Binding ChatMessages}">
+            <ListBox Height ="300" Width="100" Name="UserList" ItemsSource="{Binding Users}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Content}"/>
+                        <WrapPanel>
+                            <TextBlock Text="{Binding Name}" Width="50" />
+                        </WrapPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            
+            <ListBox Height ="300" Width="500" Name="Messages" ItemsSource="{Binding ChatMessages}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <WrapPanel>
+                        <TextBlock Text="{Binding Sender.Name}" Width="50" />
+                        <TextBlock Text="{Binding Content}" Width="200" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding DateTimeStamp}" HorizontalAlignment="Right" />
+                        </WrapPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

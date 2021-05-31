@@ -43,7 +43,17 @@ namespace ChatClientWPF.Services
 
         public async void StartChatting()
         {
+            await UpdateUserList();
             await Chatting();
+        }
+
+        public async Task UpdateUserList()
+        {
+            var reply = _client.GetAllUsers(new Empty());
+            while (await reply.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))
+            {
+                _chatVM.Users.Add(reply.ResponseStream.Current);
+            }
         }
 
         public async Task Chatting()
@@ -80,7 +90,6 @@ namespace ChatClientWPF.Services
                 }
                 await chat.RequestStream.CompleteAsync();
             }
-            //await _client.LogOutAsync(CurrentUser);
 
         }
     }
