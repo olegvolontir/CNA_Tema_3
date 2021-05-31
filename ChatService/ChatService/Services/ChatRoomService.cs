@@ -1,5 +1,6 @@
 ﻿using ChatService.Models;
 using ChatService.Protos;
+using Grpc.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +12,22 @@ namespace ChatService.Services
     {
         public List<Models.User> Users { get; set; } = new();
 
+        public List<ChatMessage> ChatHistory { get; set; } = new();
+
         public async Task SendMessageToUsers(ChatMessage chatMessage)
         {
-            foreach(var user in Users)
+            ChatHistory.Add(chatMessage);
+            foreach (var user in Users)
             {
-                if (user.ID != chatMessage.Sender.ID)
-                {
                     await user.ResponseStream.WriteAsync(chatMessage);
-                }
+            }
+        }
+
+        public async Task GetAllMessages(IServerStreamWriter<ChatMessage> responseStream)
+        {
+            foreach (var message in ChatHistory)
+            {
+                await responseStream.WriteAsync(message);
             }
         }
     }

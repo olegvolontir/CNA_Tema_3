@@ -29,24 +29,6 @@ namespace ChatClientWPF.Services
             StartChatting();
         }
 
-        //public async Task UserLogIn(object obj)
-        //{
-        //    var _params = (object[])obj;
-
-        //    if (string.IsNullOrEmpty(_params[0] as string)) return;
-
-
-        //    CurrentUser = new User()
-        //    {
-        //        ID = Guid.NewGuid().ToString(),
-        //        Name = _params[0] as string
-        //    };
-
-        //    await _client.LogInAsync(CurrentUser);
-
-        //    await Chatting();
-        //}
-
         public async Task UserLogOut(object obj)
         {
             await _client.LogOutAsync(CurrentUser);
@@ -78,6 +60,7 @@ namespace ChatClientWPF.Services
                 {
                     while (await chat.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))
                     {
+                        chat.ResponseStream.Current.DateTimeStamp = DateTime.UtcNow.ToTimestamp();
                         _chatVM.ChatMessages.Add(chat.ResponseStream.Current);
                     }
                 });
@@ -95,8 +78,10 @@ namespace ChatClientWPF.Services
                         _newMessage = false;
                     }
                 }
+                await chat.RequestStream.CompleteAsync();
             }
-            await _client.LogOutAsync(CurrentUser);
+            //await _client.LogOutAsync(CurrentUser);
+
         }
     }
 }
