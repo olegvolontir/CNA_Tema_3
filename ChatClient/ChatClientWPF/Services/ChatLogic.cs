@@ -193,7 +193,8 @@ namespace ChatClientWPF.Services
             }
 
             _formatChanged = false;
-
+            textBlock.TextWrapping = TextWrapping.Wrap;
+            textBlock.Width = 200;
             return textBlock;
         }
 
@@ -224,7 +225,7 @@ namespace ChatClientWPF.Services
                         {
                             Sender = chat.ResponseStream.Current.Sender,
                             Content = FormatMessage(chat.ResponseStream.Current.Content),
-                            SentTime = chat.ResponseStream.Current.DateTimeStamp.ToDateTime()
+                            SentTime = chat.ResponseStream.Current.DateTimeStamp.ToDateTime().ToLocalTime()
                         });
                     }));
 
