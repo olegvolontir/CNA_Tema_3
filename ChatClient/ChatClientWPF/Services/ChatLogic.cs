@@ -6,6 +6,7 @@ using ChatClientWPF.Views;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -75,18 +76,70 @@ namespace ChatClientWPF.Services
             }
         }
 
-        public TextBlock FormatMessage(string input)
+        public TextBlock CutFormatSplit(string input)
         {
             var textBlock = new TextBlock();
 
-            Regex regex = new Regex(@"(?<=\s\*)(.*?)(?=\*\s)");
+            Regex italicRegex = new Regex(@"(?<=\s\~)(.*?)(?=\~\s)");
+            var matches = italicRegex.Matches(input);
+            string[] split = Regex.Split(input, @"\s\~([^\~]*)\~\s");
 
-            var matches = regex.Matches(input);
+            int j = 0;
+            for (int i = 0; i < split.Length; ++i)
+            {
+
+                if (j < matches.Count && split[i].Equals(matches[j].Value))
+                {
+                    textBlock.Inlines.Add(new Run(split[i] + ' ') {TextDecorations= TextDecorations.Strikethrough}); ;
+                    ++j;
+                }
+                else
+                {
+                    textBlock.Inlines.Add(split[i] + ' ');
+                }
+            }
+            return textBlock;
+        }
+
+        public TextBlock ItalicFormatSplit(string input)
+        {
+            var textBlock = new TextBlock();
+            
+            Regex italicRegex = new Regex(@"(?<=\s\-)(.*?)(?=\-\s)");
+            var matches = italicRegex.Matches(input);
+            string[] split = Regex.Split(input, @"\s\-([^\-]*)\-\s");
+
+            int j = 0;
+            for (int i = 0; i < split.Length; ++i)
+            {
+
+                if (j < matches.Count && split[i].Equals(matches[j].Value))
+                {
+                    textBlock.Inlines.Add(new Run(split[i] + ' ') { FontStyle=FontStyles.Italic}); ;
+                    ++j;
+                }
+                else
+                {
+                    textBlock.Inlines.Add(split[i] + ' ');
+                }
+            }
+                return textBlock;
+        }
+
+        public TextBlock BoldFormatSplit(string input)
+        {
+            var textBlock = new TextBlock();
+
+            Regex boldRegex = new Regex(@"(?<=\s\*)(.*?)(?=\*\s)");
+
+            var matches = boldRegex.Matches(input);
+
             string[] split = Regex.Split(input, @"\s\*([^\*]*)\*\s");
 
             int j = 0;
             for (int i = 0; i < split.Length; ++i)
             {
+
                 if (j < matches.Count && split[i].Equals(matches[j].Value))
                 {
                     textBlock.Inlines.Add(new Run(split[i] + ' ') { FontWeight = FontWeights.Bold });
@@ -97,7 +150,16 @@ namespace ChatClientWPF.Services
                     textBlock.Inlines.Add(split[i] + ' ');
                 }
             }
+            return textBlock;
+        }
 
+        public TextBlock FormatMessage(string input)
+        {
+            var textBlock = new TextBlock();
+          
+           //textBlock = CutFormatSplit(input);
+            textBlock = ItalicFormatSplit(input);
+           // textBlock=BoldFormatSplit(input);
             return textBlock;
         }
 
