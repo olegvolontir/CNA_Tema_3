@@ -26,9 +26,9 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <WrapPanel>
-                        <TextBlock Text="{Binding Sender.Name}" Width="50" />
-                        <TextBlock Text="{Binding Content}" Width="200" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding SentTime}" HorizontalAlignment="Right" />
+                            <TextBlock Text="{Binding Sender.Name}" Width="50" />
+                            <ContentPresenter Content="{Binding Content}"></ContentPresenter>
+                            <TextBlock Text="{Binding SentTime}" HorizontalAlignment="Right" />
                         </WrapPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

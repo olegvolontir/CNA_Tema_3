@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Threading;
 
 namespace ChatClientWPF.Services
 {
@@ -31,6 +32,7 @@ namespace ChatClientWPF.Services
             chat = _client.SendMessage();
             _chatVM = chatVM;
             CurrentUser = Helper.user;
+
             StartChatting();
         }
 
@@ -49,7 +51,6 @@ namespace ChatClientWPF.Services
 
         public async void StartChatting()
         {
-            // await UpdateUserList();
             await Chatting();
         }
 
@@ -74,22 +75,32 @@ namespace ChatClientWPF.Services
             }
         }
 
-        public TextBlock FormatMessage(string message)
+        public TextBlock FormatMessage(string input)
         {
-            Regex regex = new Regex(@"(?<=\s\*)([^\*]*)(?=\*\s)");
-            var matches = regex.Matches(message);
-            TextBlock formattedMessage=new ();
-            int start = 0;
-            foreach(Match match in matches)
-            {
-                formattedMessage.Inlines.Add(message.Substring(start, match.Index-1));
-                formattedMessage.Inlines.Add(new Run(message.Substring(match.Index, match.Index+match.Value.Length)) { FontWeight = FontWeights.Bold });
-                start = match.Index + match.Length+1;
-            }
-            formattedMessage.Inlines.Add(message.Substring(start, message.Length-1));
+            var textBlock = new TextBlock();
 
-            return formattedMessage;
+            Regex regex = new Regex(@"(?<=\s\*)(.*?)(?=\*\s)");
+
+            var matches = regex.Matches(input);
+            string[] split = Regex.Split(input, @"\s\*([^\*]*)\*\s");
+
+            int j = 0;
+            for (int i = 0; i < split.Length; ++i)
+            {
+                if (j < matches.Count && split[i].Equals(matches[j].Value))
+                {
+                    textBlock.Inlines.Add(new Run(split[i] + ' ') { FontWeight = FontWeights.Bold });
+                    ++j;
+                }
+                else
+                {
+                    textBlock.Inlines.Add(split[i] + ' ');
+                }
+            }
+
+            return textBlock;
         }
+
         public async Task Chatting()
         {
             await chat.RequestStream.WriteAsync(new ChatMessage()
@@ -98,23 +109,38 @@ namespace ChatClientWPF.Services
                 Content = "",
                 DateTimeStamp = DateTime.UtcNow.ToTimestamp()
             });
-            var task = Task.Run(async () =>
+
+            string text = "";
+
+            var dispatcher = Application.Current.Dispatcher;
+
+            Thread t1 = new Thread(async () =>
             {
                 while (await chat.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))
                 {
                     chat.ResponseStream.Current.DateTimeStamp = DateTime.UtcNow.ToTimestamp();
-                    _chatVM.ChatMessages.Add(new DisplayedMessage()
-                    { 
-                        Sender = chat.ResponseStream.Current.Sender,
-                        Content = FormatMessage(chat.ResponseStream.Current.Content),
-                        SentTime = chat.ResponseStream.Current.DateTimeStamp.ToDateTime()
-                    }) ;
+
+                    text = chat.ResponseStream.Current.Content;
+
+                    dispatcher.Invoke((Action)(() =>
+                    {
+                        _chatVM.ChatMessages.Add(new DisplayedMessage()
+                        {
+                            Sender = chat.ResponseStream.Current.Sender,
+                            Content = FormatMessage(chat.ResponseStream.Current.Content),
+                            SentTime = chat.ResponseStream.Current.DateTimeStamp.ToDateTime()
+                        });
+                    }));
+
                     UpdateUserList(chat.ResponseStream.Current);
                 }
             });
+            t1.SetApartmentState(ApartmentState.STA);
+            t1.Start();
+
             while (true)
             {
-                await Task.Delay(500);
+                await Task.Delay(200);
                 if (_newMessage)
                 {
                     await chat.RequestStream.WriteAsync(new ChatMessage()
@@ -126,9 +152,6 @@ namespace ChatClientWPF.Services
                     _newMessage = false;
                 }
             }
-            await chat.RequestStream.CompleteAsync();
-
-
         }
     }
 }

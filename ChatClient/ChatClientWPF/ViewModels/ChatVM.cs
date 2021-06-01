@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -83,20 +84,6 @@ namespace ChatClientWPF.ViewModels
                 return sendMessageCommand;
             }
         }
-
-        //private ICommand logInCommand;
-        //public ICommand LogInCommand
-        //{
-        //    get
-        //    {
-        //        if (logInCommand == null)
-        //        {
-        //            //logInCommand = new RelayCommandGeneric<string>(async param => await chatLogic.UserLogIn(param));
-        //            logInCommand = new RelayCommand(async param => await _chatLogic.UserLogIn(param));
-        //        }
-        //        return logInCommand;
-        //    }
-        //}
 
         private ICommand logOutCommand;
         public ICommand LogOutCommand
