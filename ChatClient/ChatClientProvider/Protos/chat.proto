@@ -9,7 +9,6 @@ service Chat{
     rpc SendMessage(stream ChatMessage) returns(stream ChatMessage);
     rpc LogOut(User) returns (LogResponse);
 	rpc LogIn(User) returns (LogResponse);
-	rpc GetAllUsers(google.protobuf.Empty) returns (stream User);
 }
 
 message ChatMessage{

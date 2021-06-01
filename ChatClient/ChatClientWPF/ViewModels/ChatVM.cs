@@ -15,7 +15,8 @@ namespace ChatClientWPF.ViewModels
     class ChatVM : BasePropertyChanged
     {
         private ChatLogic _chatLogic;
-        private object _chatMessagesLock = new();
+        public object _chatMessagesLock = new();
+        public object _userListLock = new();
 
         public ChatVM()
         {
@@ -23,6 +24,7 @@ namespace ChatClientWPF.ViewModels
             ChatMessages = new();
             Users = new();
             BindingOperations.EnableCollectionSynchronization(ChatMessages, _chatMessagesLock);
+            BindingOperations.EnableCollectionSynchronization(Users, _userListLock);
             _chatLogic = new(this);
         }
 

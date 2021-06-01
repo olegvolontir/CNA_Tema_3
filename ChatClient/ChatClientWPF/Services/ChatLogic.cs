@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,10 +21,12 @@ namespace ChatClientWPF.Services
         public bool _newMessage = false;
         public bool _isRunning = true;
         private ChatVM _chatVM;
+        private Grpc.Core.AsyncDuplexStreamingCall<ChatMessage, ChatMessage> chat;
 
         public ChatLogic(ChatVM chatVM)
         {
             _client = new GrpcChatServiceProvider().GetChatClient();
+            chat = _client.SendMessage();
             _chatVM = chatVM;
             CurrentUser = Helper.user;
             StartChatting();
@@ -32,6 +35,7 @@ namespace ChatClientWPF.Services
         public async Task UserLogOut(object obj)
         {
             await _client.LogOutAsync(CurrentUser);
+            await chat.RequestStream.CompleteAsync();
             (obj as Window).Close();
         }
 
@@ -43,53 +47,64 @@ namespace ChatClientWPF.Services
 
         public async void StartChatting()
         {
-            await UpdateUserList();
+            // await UpdateUserList();
             await Chatting();
         }
 
-        public async Task UpdateUserList()
+        public void UpdateUserList(ChatMessage message)
         {
-            var reply = _client.GetAllUsers(new Empty());
-            while (await reply.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))
+            Regex pattern = new Regex(@"\w+\shas\sconnected");
+            Regex pattern2 = new Regex(@"\w+\shas\sdisconnected");
+            if (pattern.IsMatch(message.Content))
             {
-                _chatVM.Users.Add(reply.ResponseStream.Current);
+                lock (_chatVM._userListLock)
+                {
+                    _chatVM.Users.Add(message.Sender);
+                }
+            }
+            else if (pattern2.IsMatch(message.Content))
+            {
+
+                lock (_chatVM._userListLock)
+                {
+                    _chatVM.Users.Remove(_chatVM.Users.Where(u => u.ID == message.Sender.ID).FirstOrDefault());
+                }
             }
         }
 
         public async Task Chatting()
         {
-            using (var chat = _client.SendMessage())
+            await chat.RequestStream.WriteAsync(new ChatMessage()
             {
-                await chat.RequestStream.WriteAsync(new ChatMessage()
+                Sender = CurrentUser,
+                Content = "",
+                DateTimeStamp = DateTime.UtcNow.ToTimestamp()
+            });
+            var task = Task.Run(async () =>
+            {
+                while (await chat.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))
                 {
-                    Sender = CurrentUser,
-                    Content = "",
-                    DateTimeStamp = DateTime.UtcNow.ToTimestamp()
-                });
-                var task = Task.Run(async () =>
-                {
-                    while (await chat.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))
-                    {
-                        chat.ResponseStream.Current.DateTimeStamp = DateTime.UtcNow.ToTimestamp();
-                        _chatVM.ChatMessages.Add(chat.ResponseStream.Current);
-                    }
-                });
-                while (_isRunning)
-                {
-                    await Task.Delay(500);
-                    if (_newMessage)
-                    {
-                        await chat.RequestStream.WriteAsync(new ChatMessage()
-                        {
-                            Sender = CurrentUser,
-                            Content = _chatVM.CurrentMessage,
-                            DateTimeStamp = DateTime.UtcNow.ToTimestamp()
-                        });
-                        _newMessage = false;
-                    }
+                    chat.ResponseStream.Current.DateTimeStamp = DateTime.UtcNow.ToTimestamp();
+                    _chatVM.ChatMessages.Add(chat.ResponseStream.Current);
+                    UpdateUserList(chat.ResponseStream.Current);
                 }
-                await chat.RequestStream.CompleteAsync();
+            });
+            while (_isRunning)
+            {
+                await Task.Delay(500);
+                if (_newMessage)
+                {
+                    await chat.RequestStream.WriteAsync(new ChatMessage()
+                    {
+                        Sender = CurrentUser,
+                        Content = _chatVM.CurrentMessage,
+                        DateTimeStamp = DateTime.UtcNow.ToTimestamp()
+                    });
+                    _newMessage = false;
+                }
             }
+            await chat.RequestStream.CompleteAsync();
+
 
         }
     }
