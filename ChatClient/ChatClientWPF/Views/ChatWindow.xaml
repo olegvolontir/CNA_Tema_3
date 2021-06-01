@@ -28,7 +28,7 @@
                         <WrapPanel>
                         <TextBlock Text="{Binding Sender.Name}" Width="50" />
                         <TextBlock Text="{Binding Content}" Width="200" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding DateTimeStamp}" HorizontalAlignment="Right" />
+                        <TextBlock Text="{Binding SentTime}" HorizontalAlignment="Right" />
                         </WrapPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

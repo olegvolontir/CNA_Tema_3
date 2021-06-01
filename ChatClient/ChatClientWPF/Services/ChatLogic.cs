@@ -1,5 +1,6 @@
 ﻿using ChatClientProvider.Protos;
 using ChatClientProvider.Services;
+using ChatClientWPF.Models;
 using ChatClientWPF.ViewModels;
 using ChatClientWPF.Views;
 using Google.Protobuf.WellKnownTypes;
@@ -11,6 +12,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace ChatClientWPF.Services
 {
@@ -19,7 +22,6 @@ namespace ChatClientWPF.Services
         private static Chat.ChatClient _client;
         public static User CurrentUser { get; set; }
         public bool _newMessage = false;
-        public bool _isRunning = true;
         private ChatVM _chatVM;
         private Grpc.Core.AsyncDuplexStreamingCall<ChatMessage, ChatMessage> chat;
 
@@ -72,6 +74,22 @@ namespace ChatClientWPF.Services
             }
         }
 
+        public TextBlock FormatMessage(string message)
+        {
+            Regex regex = new Regex(@"(?<=\s\*)([^\*]*)(?=\*\s)");
+            var matches = regex.Matches(message);
+            TextBlock formattedMessage=new ();
+            int start = 0;
+            foreach(Match match in matches)
+            {
+                formattedMessage.Inlines.Add(message.Substring(start, match.Index-1));
+                formattedMessage.Inlines.Add(new Run(message.Substring(match.Index, match.Index+match.Value.Length)) { FontWeight = FontWeights.Bold });
+                start = match.Index + match.Length+1;
+            }
+            formattedMessage.Inlines.Add(message.Substring(start, message.Length-1));
+
+            return formattedMessage;
+        }
         public async Task Chatting()
         {
             await chat.RequestStream.WriteAsync(new ChatMessage()
@@ -85,11 +103,16 @@ namespace ChatClientWPF.Services
                 while (await chat.ResponseStream.MoveNext(cancellationToken: CancellationToken.None))
                 {
                     chat.ResponseStream.Current.DateTimeStamp = DateTime.UtcNow.ToTimestamp();
-                    _chatVM.ChatMessages.Add(chat.ResponseStream.Current);
+                    _chatVM.ChatMessages.Add(new DisplayedMessage()
+                    { 
+                        Sender = chat.ResponseStream.Current.Sender,
+                        Content = FormatMessage(chat.ResponseStream.Current.Content),
+                        SentTime = chat.ResponseStream.Current.DateTimeStamp.ToDateTime()
+                    }) ;
                     UpdateUserList(chat.ResponseStream.Current);
                 }
             });
-            while (_isRunning)
+            while (true)
             {
                 await Task.Delay(500);
                 if (_newMessage)

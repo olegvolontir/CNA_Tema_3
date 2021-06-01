@@ -1,5 +1,6 @@
 ﻿using ChatClientProvider.Protos;
 using ChatClientWPF.Commands;
+using ChatClientWPF.Models;
 using ChatClientWPF.Services;
 using System;
 using System.Collections.Generic;
@@ -43,8 +44,8 @@ namespace ChatClientWPF.ViewModels
             }
         }
 
-        private ObservableCollection<ChatMessage> chatMessages;
-        public ObservableCollection<ChatMessage> ChatMessages
+        private ObservableCollection<DisplayedMessage> chatMessages;
+        public ObservableCollection<DisplayedMessage> ChatMessages
         {
             get
             {
